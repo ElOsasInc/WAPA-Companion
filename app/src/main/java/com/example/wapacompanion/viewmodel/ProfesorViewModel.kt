@@ -10,10 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
-class ProfesorViewModel (
-    //AQUI VA LA REFERENCIA A LA API
-    //private val api: UsuarioApiService = ApiClient.usuarioService
-) : ViewModel() {
+class ProfesorViewModel () : ViewModel() {
     //SE DECLARA EL REPOSITORY PARA ACCEDER A LOS MÉTODOS
     private val profesorRepository = ProfesorRepository()
 
@@ -22,8 +19,11 @@ class ProfesorViewModel (
         private set
     var password by mutableStateOf("")
         private set
+
     //VARABLES PARA ESTADO DEL VIEWMODEL
     var isCargando by mutableStateOf(false)
+        private set
+    var errorMessage by mutableStateOf("")
         private set
 
     //CAMBIAR LOS VALORES DESDE LAS VIEWS CON FUNCIONES
@@ -35,16 +35,20 @@ class ProfesorViewModel (
     }
 
     //AQUÍ EMPIEZAN LAS FUNCIONES
-    fun login() {
-        val request: ProfesorModel = ProfesorModel(user, "", password)
+    fun login(onExitoNavegar: (Boolean) -> Unit) {
+        errorMessage = ""
+        val request = ProfesorModel(user, "", password)
 
         viewModelScope.launch {
-            try {
-                val token = profesorRepository.login(request)
-                userChange(token.toString())
-            } catch (e: Exception) {
-                userChange(e.toString())
+            isCargando = true
+            val loginResult = profesorRepository.login(request)
+            errorMessage = when(loginResult) {
+                1 -> ""
+                0 -> "Usuario no existente"
+                else -> "No fue posible conectar al servidor"
             }
+            isCargando = false
+            if (errorMessage.isEmpty()) onExitoNavegar(true)
         }
     }
 }

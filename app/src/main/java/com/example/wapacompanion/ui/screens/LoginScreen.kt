@@ -1,20 +1,24 @@
 package com.example.wapacompanion.ui.screens
 
+import com.example.wapacompanion.viewmodel.ProfesorViewModel
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.wapacompanion.viewmodel.ProfesorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    profesorViewModel: ProfesorViewModel,
-    onNavegarDetalle: () -> Unit
+    loginExitoso: () -> Unit
 ) {
+    val profesorViewModel: ProfesorViewModel = viewModel()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -22,7 +26,15 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("WAPA - Inicio de sesión")
+        Text(
+            text = "WAPA",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Text(
+            text = "Inicio de sesión",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             label = { Text("Usuario") },
@@ -50,10 +62,9 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                profesorViewModel.login()
-                /*viewModel.cargarUsuarioPorIdYNavegar { usuario ->
-                    onNavegarDetalle(usuario)
-                }*/
+                profesorViewModel.login { loginResult ->
+                    loginExitoso()
+                }
             },
             enabled = !profesorViewModel.isCargando,
             modifier = Modifier
@@ -62,5 +73,14 @@ fun LoginScreen(
         ) {
             Text(if (profesorViewModel.isCargando) "Cargando..." else "Iniciar sesión")
         }
+
+        Text(
+            text = profesorViewModel.errorMessage,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp),
+            color = Color.Red,
+            textAlign = TextAlign.Center
+        )
     }
 }

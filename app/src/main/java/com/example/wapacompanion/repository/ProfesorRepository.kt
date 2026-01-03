@@ -10,16 +10,19 @@ import okhttp3.ResponseBody
 class ProfesorRepository {
     private val profesorService = ApiClient.profesorService
 
-    suspend fun login(request: ProfesorModel): Boolean {
-        val response: Response<SimpleResponse> = profesorService.login(request)
+    suspend fun login(request: ProfesorModel): Int {
+        try {
+            val response: Response<SimpleResponse> = profesorService.login(request)
+            return if(response.isSuccessful) 1 else 0
+        } catch (e: Exception) {
+            return -1
+        }
 
-        // Imprimir el código HTTP
+        /*// Imprimir el código HTTP
         println("Código de respuesta: ${response.code()}")
         // Imprimir los headers
         println("Body: ${response.body()}")
         //También puedes ver el error si falla
-        println("ErrorBody: ${response.errorBody()?.string()}")
-
-        return response.isSuccessful
+        println("ErrorBody: ${response.errorBody()?.string()}")*/
     }
 }
