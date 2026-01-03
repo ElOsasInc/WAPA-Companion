@@ -12,4 +12,7 @@ import okhttp3.ResponseBody
 interface ProfesorApiService {
     @POST("login")
     suspend fun login(@Body request: ProfesorModel): Response<SimpleResponse>
+
+    @POST("logout")
+    suspend fun logout(): Response<SimpleResponse>
 }

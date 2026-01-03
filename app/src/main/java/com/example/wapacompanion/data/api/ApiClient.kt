@@ -23,6 +23,14 @@ object ApiClient {
         override fun loadForRequest(url: HttpUrl): List<Cookie?> {
             return cookieStore[url.host()] ?: emptyList()
         }
+
+        fun clear() {
+            cookieStore.clear()
+        }
+    }
+
+    fun clearCookies() {
+        cookieJar.clear()
     }
 
     private val okHttpClient = OkHttpClient.Builder()

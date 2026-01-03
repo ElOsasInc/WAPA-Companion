@@ -51,4 +51,13 @@ class ProfesorViewModel () : ViewModel() {
             if (errorMessage.isEmpty()) onExitoNavegar(true)
         }
     }
+
+    fun logout(onExitoNavegar: (Boolean) -> Unit) {
+        errorMessage = ""
+
+        viewModelScope.launch {
+            val logoutResult = profesorRepository.logout()
+            if (logoutResult) onExitoNavegar(true) else errorMessage = "No se pudo cerrar la sesión"
+        }
+    }
 }

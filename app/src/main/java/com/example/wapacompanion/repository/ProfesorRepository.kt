@@ -25,4 +25,14 @@ class ProfesorRepository {
         //También puedes ver el error si falla
         println("ErrorBody: ${response.errorBody()?.string()}")*/
     }
+
+    suspend fun logout(): Boolean {
+        try {
+            val response: Response<SimpleResponse> = profesorService.logout()
+            if (response.isSuccessful) ApiClient.clearCookies()
+            return response.isSuccessful
+        } catch (e: Exception) {
+            return false
+        }
+    }
 }

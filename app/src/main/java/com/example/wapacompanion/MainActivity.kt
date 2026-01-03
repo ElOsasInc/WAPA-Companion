@@ -40,7 +40,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("inicio") {
-                            InicioScreen()
+                            InicioScreen(
+                                logoutExitoso = {
+                                    navController.navigate("login")
+                                }
+                            )
                         }
                     }
                 }
