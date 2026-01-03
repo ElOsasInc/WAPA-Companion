@@ -15,7 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    loginExitoso: () -> Unit
+    loginExitoso: () -> Unit,
+    onNavegarRegistro: () -> Unit
 ) {
     val profesorViewModel: ProfesorViewModel = viewModel()
 
@@ -82,5 +83,13 @@ fun LoginScreen(
             color = Color.Red,
             textAlign = TextAlign.Center
         )
+        Spacer(Modifier.height(16.dp))
+
+        TextButton(
+            onClick = onNavegarRegistro,
+            modifier = Modifier.padding(horizontal = 30.dp)
+        ) {
+            Text("¿No tienes cuenta? Regístrate")
+        }
     }
 }

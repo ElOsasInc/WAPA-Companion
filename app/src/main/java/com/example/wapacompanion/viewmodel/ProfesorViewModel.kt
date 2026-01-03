@@ -19,6 +19,10 @@ class ProfesorViewModel () : ViewModel() {
         private set
     var password by mutableStateOf("")
         private set
+    var confirmPassword by mutableStateOf("")
+        private set
+    var correo by mutableStateOf("")
+        private set
 
     //VARABLES PARA ESTADO DEL VIEWMODEL
     var isCargando by mutableStateOf(false)
@@ -32,6 +36,12 @@ class ProfesorViewModel () : ViewModel() {
     }
     fun passwordChange(nuevaPassword: String) {
         password = nuevaPassword
+    }
+    fun confirmPasswordChange(nuevaPassword: String) {
+        confirmPassword = nuevaPassword
+    }
+    fun correoChange(nuevoCorreo: String) {
+        correo = nuevoCorreo
     }
 
     //AQUÍ EMPIEZAN LAS FUNCIONES
@@ -58,6 +68,20 @@ class ProfesorViewModel () : ViewModel() {
         viewModelScope.launch {
             val logoutResult = profesorRepository.logout()
             if (logoutResult) onExitoNavegar(true) else errorMessage = "No se pudo cerrar la sesión"
+        }
+    }
+
+    fun registrar(onExitoNavegar: (Boolean) -> Unit) {
+        errorMessage = ""
+        val nuevoProfesor = ProfesorModel(user, correo, password)
+
+        viewModelScope.launch {
+            isCargando = true
+            val registroResult = profesorRepository.registrar(nuevoProfesor)
+
+            errorMessage = registroResult
+            isCargando = false
+            if (errorMessage.isEmpty()) onExitoNavegar(true)
         }
     }
 }

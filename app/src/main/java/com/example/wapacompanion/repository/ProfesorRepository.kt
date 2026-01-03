@@ -3,6 +3,8 @@ package com.example.wapacompanion.repository
 import com.example.wapacompanion.data.api.ApiClient
 import com.example.wapacompanion.data.model.ProfesorModel
 import com.example.wapacompanion.data.response.SimpleResponse
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 
 import retrofit2.Response
 import okhttp3.ResponseBody
@@ -33,6 +35,20 @@ class ProfesorRepository {
             return response.isSuccessful
         } catch (e: Exception) {
             return false
+        }
+    }
+
+    suspend fun registrar(nuevoProfesor: ProfesorModel): String {
+        try {
+            val response: Response<SimpleResponse> = profesorService.registrar(nuevoProfesor)
+            val errors = response.errorBody()?.string()
+            if(errors != null) {
+                val errorsJson = Gson().fromJson(errors, JsonObject::class.java)
+                return errorsJson.get("message").asString
+            }
+            return ""
+        } catch (e: Exception) {
+            return "No se pudo conectar al servidor"
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.wapacompanion
 //Screens
 import com.example.wapacompanion.ui.screens.LoginScreen
 import com.example.wapacompanion.ui.screens.InicioScreen
+import com.example.wapacompanion.ui.screens.RegisterScreen
 import com.example.wapacompanion.ui.theme.WAPACompanionTheme
 
 //Librerias
@@ -35,6 +36,9 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 loginExitoso = {
                                     navController.navigate("inicio")
+                                },
+                                onNavegarRegistro = {
+                                    navController.navigate("registro")
                                 }
                             )
                         }
@@ -42,6 +46,14 @@ class MainActivity : ComponentActivity() {
                         composable("inicio") {
                             InicioScreen(
                                 logoutExitoso = {
+                                    navController.navigate("login")
+                                }
+                            )
+                        }
+
+                        composable("registro") {
+                            RegisterScreen(
+                                onNavegarLogin = {
                                     navController.navigate("login")
                                 }
                             )

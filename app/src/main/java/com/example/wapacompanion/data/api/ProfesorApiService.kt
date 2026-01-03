@@ -15,4 +15,7 @@ interface ProfesorApiService {
 
     @POST("logout")
     suspend fun logout(): Response<SimpleResponse>
+
+    @POST("registro")
+    suspend fun registrar(@Body nuevoProfesor: ProfesorModel): Response<SimpleResponse>
 }
