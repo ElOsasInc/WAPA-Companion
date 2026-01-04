@@ -47,6 +47,16 @@ dependencies {
     implementation("androidx.camera:camera-extensions:1.3.0")
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
     implementation("com.google.mlkit:text-recognition:16.0.0")
+    //Librería para Compose (La parte gráfica xd)
+    implementation("androidx.compose.material3:material3")
+
+    //Librería para Nav (Navegación entre pantallas)
+    implementation("androidx.navigation:navigation-compose:2.8.0")
+
+    //Librería para Retrofit (Conexión con API y manejo de datos)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
