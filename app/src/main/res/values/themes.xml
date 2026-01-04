@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-<<<<<<< HEAD
     <style name="Theme.Manejoasist" parent="android:Theme.Material.Light.NoActionBar" />
-=======
-    <style name="Theme.WAPACompanion" parent="android:Theme.Material.Light.NoActionBar" />
->>>>>>> ce5e7797d8154ede2939ac2826d7950d59af1270
 </resources>

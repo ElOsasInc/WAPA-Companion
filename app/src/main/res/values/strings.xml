@@ -1,7 +1,3 @@
 <resources>
-<<<<<<< HEAD
     <string name="app_name">manejoasist</string>
-=======
-    <string name="app_name">WAPA Companion</string>
->>>>>>> ce5e7797d8154ede2939ac2826d7950d59af1270
 </resources>

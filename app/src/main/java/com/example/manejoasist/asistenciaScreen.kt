@@ -21,6 +21,10 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import java.text.SimpleDateFormat
 import java.util.*
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import android.util.Log
+
 
 data class RegistroAsistencia(
     val nl: Int,
@@ -43,26 +47,51 @@ fun asistenciaScreen() {
     }
 
     val fechaHoy = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
+    val context = LocalContext.current
+    var permisoCamara by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        permisoCamara = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.CAMERA
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        QRScanner(
-            onCodeScanned = { codigo ->
-                val horaActual = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-                val boleta = codigo.lines()
-                    .find { it.contains("Boleta") }
-                    ?.filter { it.isDigit() }
+        var ultimoCodigo by remember { mutableStateOf("Esperando escaneo...") }
 
-                val alumno = alumnos.find { it.boleta == boleta }
-                if (alumno != null) {
-                    alumno.registros[fechaHoy] = horaActual
-                }
-                val nombre = codigo.lines()
-                    .find { it.contains("Nombre") }
-                    ?.substringAfter(":")
-                    ?.trim()
-            }
+        Text(
+            text = ultimoCodigo,
+            modifier = Modifier.padding(8.dp)
         )
 
+        if (permisoCamara) {
+            QRScanner(onCodeScanned = { codigo ->
+                ultimoCodigo = codigo
+                Log.d("QR", "LEIDO: $codigo")
+
+                val boleta = Regex("\\d{10}")
+                    .find(codigo)
+                    ?.value ?: return@QRScanner
+
+                val alumno = alumnos.find { it.boleta == boleta } ?: return@QRScanner
+
+                if (alumno.registros[fechaHoy] == null) {
+                    val horaActual = SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(Date())
+
+                    alumno.registros[fechaHoy] = horaActual
+                }
+            }
+        )
+        }
+        else {
+            Text(
+                "Permiso de cámara NO concedido",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
         Divider()
 
         TablaAsistencia(alumnos = alumnos, fechas = listOf(fechaHoy))
@@ -110,61 +139,88 @@ fun TablaAsistencia(alumnos: List<RegistroAsistencia>, fechas: List<String>) {
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun QRScanner(onCodeScanned: (String) -> Unit) {
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // 🔥 Executor en background (CRÍTICO)
+    val cameraExecutor = remember {
+        java.util.concurrent.Executors.newSingleThreadExecutor()
+    }
 
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(300.dp)
             .padding(8.dp),
         factory = { ctx ->
+
             val previewView = PreviewView(ctx)
             val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
 
             cameraProviderFuture.addListener({
+
                 val cameraProvider = cameraProviderFuture.get()
 
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                val barcodeScanner = BarcodeScanning.getClient()
+
+                val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                        Barcode.FORMAT_QR_CODE,
+                        Barcode.FORMAT_AZTEC,
+                        Barcode.FORMAT_PDF417
+                    )
+                    .build()
+
+                val barcodeScanner = BarcodeScanning.getClient(options)
+
                 val imageAnalyzer = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                     .also {
-                        it.setAnalyzer(ContextCompat.getMainExecutor(ctx)) { imageProxy ->
+                        it.setAnalyzer(cameraExecutor) { imageProxy ->
+
                             val mediaImage = imageProxy.image
                             if (mediaImage != null) {
-                                val inputImage = InputImage.fromMediaImage(
+
+                                val image = InputImage.fromMediaImage(
                                     mediaImage,
                                     imageProxy.imageInfo.rotationDegrees
                                 )
 
-                                barcodeScanner.process(inputImage)
+                                barcodeScanner.process(image)
                                     .addOnSuccessListener { barcodes ->
-                                        for (barcode in barcodes) {
-                                            barcode.rawValue?.let { onCodeScanned(it) }
+                                        if (barcodes.isNotEmpty()) {
+                                            barcodes.first().rawValue?.let {
+                                                Log.d("QR", "LEIDO: $it")
+                                                onCodeScanned(it)
+                                            }
                                         }
+                                    }
+                                    .addOnFailureListener {
+                                        Log.e("QR", "Error MLKit", it)
                                     }
                                     .addOnCompleteListener {
                                         imageProxy.close()
                                     }
+
                             } else {
                                 imageProxy.close()
                             }
                         }
                     }
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     lifecycleOwner,
-                    cameraSelector,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
                     imageAnalyzer
                 )
+
             }, ContextCompat.getMainExecutor(ctx))
 
             previewView
