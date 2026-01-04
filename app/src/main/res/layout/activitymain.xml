@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registro de Asistencia"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_gravity="center"
+        android:paddingBottom="16dp"/>
+
+    <!-- Tabla -->
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+
+        <!-- Encabezados -->
+        <TableRow>
+            <TextView android:text="Boleta" android:padding="8dp" android:textStyle="bold"/>
+            <TextView android:text="Nombre" android:padding="8dp" android:textStyle="bold"/>
+            <TextView android:text="Fecha" android:padding="8dp" android:textStyle="bold"/>
+            <TextView android:text="Asistencia" android:padding="8dp" android:textStyle="bold"/>
+        </TableRow>
+
+        <!-- Ejemplo de fila -->
+        <TableRow>
+            <TextView android:text="2026001" android:padding="8dp"/>
+            <TextView android:text="Juan Pérez" android:padding="8dp"/>
+            <TextView android:text="02/01/2026" android:padding="8dp"/>
+            <TextView android:text="Presente" android:padding="8dp"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="2026002" android:padding="8dp"/>
+            <TextView android:text="María López" android:padding="8dp"/>
+            <TextView android:text="02/01/2026" android:padding="8dp"/>
+            <TextView android:text="Ausente" android:padding="8dp"/>
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>
