@@ -19,6 +19,10 @@ dependencyResolutionManagement {
     }
 }
 
+<<<<<<< HEAD
 rootProject.name = "wapacompanion"
+=======
+rootProject.name = "WAPA Companion"
+>>>>>>> ce5e7797d8154ede2939ac2826d7950d59af1270
 include(":app")
  
