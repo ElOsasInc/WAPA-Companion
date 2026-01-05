@@ -16,7 +16,8 @@ import com.example.wapacompanion.viewmodel.ProfesorViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InicioScreen(
-    logoutExitoso: () -> Unit
+    logoutExitoso: () -> Unit,
+    verDetallesClase: () -> Unit
 ) {
     val profesorViewModel: ProfesorViewModel = viewModel()
 
@@ -31,6 +32,21 @@ fun InicioScreen(
             text = "Logout",
             style = MaterialTheme.typography.titleLarge
         )
+
+        Button(
+            onClick = {
+                verDetallesClase()
+                /*profesorViewModel.logout { logoutResult ->
+                    logoutExitoso()
+                }*/
+            },
+            enabled = true,/*!profesorViewModel.isCargando,*/
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp)
+        ) {
+            Text("Ver clase muestra")
+        }
 
         Button(
             onClick = {
