@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 fun InicioScreen(
     agregarClase: () -> Unit,
     logoutExitoso: () -> Unit
+    verDetallesClase: () -> Unit
 ) {
     val profesorViewModel: ProfesorViewModel = viewModel()
     val clasesViewModel: ClasesViewModel = viewModel()
@@ -82,6 +83,21 @@ fun InicioScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+
+        Button(
+            onClick = {
+                verDetallesClase()
+                /*profesorViewModel.logout { logoutResult ->
+                    logoutExitoso()
+                }*/
+            },
+            enabled = true,/*!profesorViewModel.isCargando,*/
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp)
+        ) {
+            Text("Ver clase muestra")
+        }
 
         Button(
             onClick = {
