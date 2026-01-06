@@ -4,6 +4,7 @@ package com.example.wapacompanion
 import com.example.wapacompanion.ui.screens.LoginScreen
 import com.example.wapacompanion.ui.screens.InicioScreen
 import com.example.wapacompanion.ui.screens.RegisterScreen
+import com.example.wapacompanion.ui.screens.AgregarClaseScreen
 import com.example.wapacompanion.ui.screens.AsistenciaScreen
 import com.example.wapacompanion.ui.theme.WAPACompanionTheme
 
@@ -55,6 +56,9 @@ class MainActivity : ComponentActivity() {
 
                         composable("inicio") {
                             InicioScreen(
+                                agregarClase = {
+                                    navController.navigate("agregarClase")
+                                },
                                 logoutExitoso = {
                                     navController.navigate("login")
                                 },
@@ -63,6 +67,15 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
+                        composable("agregarClase") {
+                            AgregarClaseScreen(
+                                claseAgregada = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
 
                         composable("registro") {
                             RegisterScreen(
@@ -76,6 +89,7 @@ class MainActivity : ComponentActivity() {
                             AsistenciaScreen()
                         }
                     }
+
                 }
             }
         }

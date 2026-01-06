@@ -42,12 +42,13 @@ class ProfesorRepository {
         try {
             val response: Response<SimpleResponse> = profesorService.registrar(nuevoProfesor)
             val errors = response.errorBody()?.string()
-            if(errors != null) {
+           if(errors != null) {
                 val errorsJson = Gson().fromJson(errors, JsonObject::class.java)
                 return errorsJson.get("message").asString
             }
             return ""
         } catch (e: Exception) {
+            println("error:$e")
             return "No se pudo conectar al servidor"
         }
     }
