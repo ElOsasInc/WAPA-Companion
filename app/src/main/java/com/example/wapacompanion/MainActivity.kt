@@ -62,8 +62,8 @@ class MainActivity : ComponentActivity() {
                                 logoutExitoso = {
                                     navController.navigate("login")
                                 },
-                                verDetallesClase = {
-                                    navController.navigate("asistencia")
+                                verDetallesClase = { idClase ->
+                                    navController.navigate("asistencia/$idClase")
                                 }
                             )
                         }
@@ -76,7 +76,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-
                         composable("registro") {
                             RegisterScreen(
                                 onNavegarLogin = {
@@ -85,11 +84,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("asistencia") {
-                            AsistenciaScreen()
+                        composable("asistencia/{idClase}") { backStackEntry -> // ✅ CAMBIO AQUÍ
+                            val idClase = backStackEntry.arguments?.getString("idClase")?.toIntOrNull() ?: 1
+                            AsistenciaScreen(idClase = idClase)
                         }
                     }
-
                 }
             }
         }

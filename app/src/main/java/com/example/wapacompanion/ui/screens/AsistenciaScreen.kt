@@ -1,228 +1,373 @@
 package com.example.wapacompanion.ui.screens
 
-import android.annotation.SuppressLint
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
-import java.text.SimpleDateFormat
-import java.util.*
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import android.util.Log
-
-
-data class RegistroAsistencia(
-    val nl: Int,
-    val boleta: String,
-    val nombre: String,
-    val registros: MutableMap<String, String>
-)
-
-@SuppressLint("UnsafeOptInUsageError")
-@Composable
-fun AsistenciaScreen() {
-    val alumnos = remember {
-        mutableStateListOf(
-            RegistroAsistencia(12, "2023602253", "ESTRADA ROBLES JOSE ROBERTO", mutableMapOf()),
-            RegistroAsistencia(13, "2024600272", "FRAGOSO VAZQUEZ CHRISTOFER AXEL", mutableMapOf()),
-            RegistroAsistencia(14, "2024601473", "GALICIA TELLEZ JOSUE", mutableMapOf()),
-            RegistroAsistencia(15, "2024600643", "GOMEZ PIÑA IAN", mutableMapOf()),
-            RegistroAsistencia(20, "2024600691", "JUAREZ CASTILLO RUBEN GABRIEL", mutableMapOf())
-        )
-    }
-
-    val fechaHoy = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
-    val context = LocalContext.current
-    var permisoCamara by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        permisoCamara = ContextCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.CAMERA
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        var ultimoCodigo by remember { mutableStateOf("Esperando escaneo...") }
-
-        Text(
-            text = ultimoCodigo,
-            modifier = Modifier.padding(8.dp)
-        )
-
-        if (permisoCamara) {
-            QRScanner(onCodeScanned = { codigo ->
-                ultimoCodigo = codigo
-                Log.d("QR", "LEIDO: $codigo")
-
-                val boleta = Regex("\\d{10}")
-                    .find(codigo)
-                    ?.value ?: return@QRScanner
-
-                val alumno = alumnos.find { it.boleta == boleta } ?: return@QRScanner
-
-                if (alumno.registros[fechaHoy] == null) {
-                    val horaActual = SimpleDateFormat("HH:mm", Locale.getDefault())
-                        .format(Date())
-
-                    alumno.registros[fechaHoy] = horaActual
-                }
-            }
-            )
-        }
-        else {
-            Text(
-                "Permiso de cámara NO concedido",
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-        Divider()
-
-        TablaAsistencia(alumnos = alumnos, fechas = listOf(fechaHoy))
-    }
-}
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wapacompanion.viewmodel.AsistenciaViewModel
+import com.example.wapacompanion.data.model.Alumno
+import com.example.wapacompanion.data.model.Asistencia
+import com.example.wapacompanion.ui.components.QRScanner
 
 @Composable
-fun TablaAsistencia(alumnos: List<RegistroAsistencia>, fechas: List<String>) {
-    val scrollState = rememberScrollState()
+fun AsistenciaScreen(
+    idClase: Int,
+    viewModel: AsistenciaViewModel = viewModel()
+) {
+    val claseDetalle by viewModel.claseDetalle.collectAsState()
+    val alumnos by viewModel.alumnos.collectAsState()
+    val asistencias by viewModel.asistencias.collectAsState()
+    val fechas by viewModel.fechas.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val mensaje by viewModel.mensaje.collectAsState()
 
-    Column(modifier = Modifier.horizontalScroll(scrollState).padding(16.dp)) {
-        Row {
-            Text("N.L.", Modifier.width(50.dp))
-            Text("Boleta", Modifier.width(100.dp))
-            Text("Nombre", Modifier.width(200.dp))
-            fechas.forEach { fecha ->
-                Text(fecha, Modifier.width(100.dp))
-            }
-        }
+    val ultimoCodigo by viewModel.ultimoCodigo
+    val boletasEscaneadas by viewModel.boletasEscaneadas
 
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-        alumnos.forEach { alumno ->
-            Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                Text("${alumno.nl}", Modifier.width(50.dp))
-                Text(alumno.boleta, Modifier.width(100.dp))
-                Text(alumno.nombre, Modifier.width(200.dp))
-                fechas.forEach { fecha ->
-                    val hora = alumno.registros[fecha] ?: ""
-                    Box(
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(30.dp)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(hora)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@SuppressLint("UnsafeOptInUsageError")
-@Composable
-fun QRScanner(onCodeScanned: (String) -> Unit) {
-
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    val cameraExecutor = remember {
-        java.util.concurrent.Executors.newSingleThreadExecutor()
+    LaunchedEffect(idClase) {
+        viewModel.cargarAsistencias(idClase)
     }
 
-    AndroidView(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
-            .padding(8.dp),
-        factory = { ctx ->
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        claseDetalle?.let { clase ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = clase.materia,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${clase.secuencia} - Periodo ${clase.periodo}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
 
-            val previewView = PreviewView(ctx)
-            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .width(200.dp)
+                .padding(bottom = 16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                QRScanner(
+                    onCodeScanned = { codigoQR ->
+                        viewModel.procesarCodigoQR(codigoQR, idClase)
+                    }
+                )
+            }
+        }
 
-            cameraProviderFuture.addListener({
+        error?.let { errorMsg ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = {
+                            viewModel.limpiarError()
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            }
+        }
 
-                val cameraProvider = cameraProviderFuture.get()
+        mensaje?.let { msg ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50).copy(alpha = 0.1f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = msg,
+                        color = Color(0xFF2E7D32),
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = {
+                            viewModel.limpiarMensaje()
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            }
+        }
 
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
+        if (loading) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    Text("Cargando asistencias...")
+                }
+            }
+        }
+
+        if (!loading && alumnos.isNotEmpty()) {
+            TablaAsistencia(
+                alumnos = alumnos,
+                asistencias = asistencias,
+                fechas = fechas,
+                onAsistenciaClick = { boleta, fecha, asistio ->
+                    viewModel.modificarAsistencia(idClase, boleta, fecha, !asistio)
+                }
+            )
+        }
+
+        if (!loading && alumnos.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay alumnos registrados en esta clase",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TablaAsistencia(
+    alumnos: List<Alumno>,
+    asistencias: List<Asistencia>,
+    fechas: List<String>,
+    onAsistenciaClick: (String, String, Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Lista de Asistencia (${alumnos.size} alumnos)",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            if (fechas.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Alumno",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(150.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    items(fechas) { fecha ->
+                        Text(
+                            text = fecha.takeLast(5),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.width(50.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                val options = BarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(
-                        Barcode.FORMAT_QR_CODE,
-                        Barcode.FORMAT_AZTEC,
-                        Barcode.FORMAT_PDF417
-                    )
-                    .build()
-
-                val barcodeScanner = BarcodeScanning.getClient(options)
-
-                val imageAnalyzer = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also {
-                        it.setAnalyzer(cameraExecutor) { imageProxy ->
-
-                            val mediaImage = imageProxy.image
-                            if (mediaImage != null) {
-
-                                val image = InputImage.fromMediaImage(
-                                    mediaImage,
-                                    imageProxy.imageInfo.rotationDegrees
-                                )
-
-                                barcodeScanner.process(image)
-                                    .addOnSuccessListener { barcodes ->
-                                        if (barcodes.isNotEmpty()) {
-                                            barcodes.first().rawValue?.let {
-                                                Log.d("QR", "LEIDO: $it")
-                                                onCodeScanned(it)
-                                            }
-                                        }
-                                    }
-                                    .addOnFailureListener {
-                                        Log.e("QR", "Error MLKit", it)
-                                    }
-                                    .addOnCompleteListener {
-                                        imageProxy.close()
-                                    }
-
-                            } else {
-                                imageProxy.close()
-                            }
-                        }
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.height(300.dp)
+                ) {
+                    items(alumnos) { alumno ->
+                        FilaAsistencia(
+                            alumno = alumno,
+                            fechas = fechas,
+                            asistencias = asistencias,
+                            onAsistenciaClick = onAsistenciaClick
+                        )
                     }
-
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    CameraSelector.DEFAULT_BACK_CAMERA,
-                    preview,
-                    imageAnalyzer
+                }
+            } else {
+                Text(
+                    text = "No hay fechas registradas",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-            }, ContextCompat.getMainExecutor(ctx))
-
-            previewView
+            }
         }
-    )
+    }
+}
+
+@Composable
+private fun FilaAsistencia(
+    alumno: Alumno,
+    fechas: List<String>,
+    asistencias: List<Asistencia>,
+    onAsistenciaClick: (String, String, Boolean) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        item {
+            Column(
+                modifier = Modifier.width(150.dp)
+            ) {
+                Text(
+                    text = alumno.nombre,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = alumno.boleta,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 10.sp
+                )
+            }
+        }
+
+        items(fechas) { fecha ->
+            val asistencia = asistencias.find {
+                it.boleta == alumno.boleta && it.fecha == fecha
+            }
+
+            AsistenciaButton(
+                asistencia = asistencia?.asistencia,
+                onClick = {
+                    asistencia?.let { asist ->
+                        onAsistenciaClick(alumno.boleta, fecha, asist.asistencia)
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun AsistenciaButton(
+    asistencia: Boolean?,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clickable { onClick() }
+            .background(
+                color = when (asistencia) {
+                    true -> Color(0xFF4CAF50)
+                    false -> Color(0xFFF44336)
+                    null -> Color(0xFFE0E0E0)
+                },
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        when (asistencia) {
+            true -> Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Presente",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+            false -> Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Falta",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+            null -> Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Sin registro",
+                tint = Color.Gray,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
 }

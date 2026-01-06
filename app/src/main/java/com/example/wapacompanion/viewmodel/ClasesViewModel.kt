@@ -20,12 +20,14 @@ class ClasesViewModel : ViewModel() {
             try {
                 val response = ApiClient.clasesService.getClases()
                 if (response.isSuccessful) {
+                    println(response.body())
                     _clases.value = response.body()?.data ?: emptyList()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+
     }
 
     fun subirClase(

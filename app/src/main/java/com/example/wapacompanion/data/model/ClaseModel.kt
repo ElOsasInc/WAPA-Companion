@@ -1,17 +1,18 @@
 package com.example.wapacompanion.data.model
 
 import com.google.gson.annotations.SerializedName
+
 data class ClaseModel(
 
-    @SerializedName("ID_Clase")
+    @SerializedName("id_clase")
     val idClase: Int,
 
-    @SerializedName("Materia")
+    @SerializedName("materia")
     val materia: String,
 
-    @SerializedName("Secuencia")
+    @SerializedName("secuencia")
     val secuencia: String,
 
-    @SerializedName("Periodo")
-    val periodo: String
+    @SerializedName("periodo")
+    val periodo: Int
 )

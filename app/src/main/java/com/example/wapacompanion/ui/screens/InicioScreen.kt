@@ -26,7 +26,7 @@ import androidx.compose.runtime.getValue
 fun InicioScreen(
     agregarClase: () -> Unit,
     logoutExitoso: () -> Unit,
-    verDetallesClase: () -> Unit
+    verDetallesClase: (Int) -> Unit
 ) {
     val profesorViewModel: ProfesorViewModel = viewModel()
     val clasesViewModel: ClasesViewModel = viewModel()
@@ -45,32 +45,11 @@ fun InicioScreen(
     ) {
 
 
-        Text(
-            text = "Mis clases",
-            style = MaterialTheme.typography.titleLarge
-        )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (clases.isEmpty()) {
-            Text("Aún no tienes clases")
-            Spacer(modifier = Modifier.height(10.dp))
-            } else {
-            LazyColumn {
-                items(clases) { clase ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "${clase.materia} - ${clase.secuencia}",
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                }
-            }
-        }
+
 
         Button(
             onClick = { agregarClase() },
@@ -80,25 +59,6 @@ fun InicioScreen(
         ) {
             Text("Agregar clase")
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-
-        Button(
-            onClick = {
-                verDetallesClase()
-                /*profesorViewModel.logout { logoutResult ->
-                    logoutExitoso()
-                }*/
-            },
-            enabled = true,/*!profesorViewModel.isCargando,*/
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp)
-        ) {
-            Text("Ver clase muestra")
-        }
-
         Button(
             onClick = {
                 profesorViewModel.logout { logoutResult ->
@@ -112,5 +72,32 @@ fun InicioScreen(
         ) {
             Text("Cerrar sesión")
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Mis clases",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        if (clases.isEmpty()) {
+            Text("Aún no tienes clases")
+            Spacer(modifier = Modifier.height(10.dp))
+        } else {
+            LazyColumn {
+                items(clases) { clase ->
+                    Card(
+                        onClick = { verDetallesClase(clase.idClase) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "${clase.secuencia} - ${clase.materia}",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+
     }
 }

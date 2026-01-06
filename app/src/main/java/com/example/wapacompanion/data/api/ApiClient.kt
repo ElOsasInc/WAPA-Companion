@@ -54,4 +54,11 @@ object ApiClient {
         retrofit.create(ClasesApiService::class.java)
     }
 
+    val htmlScraperService: HTMLScraperService by lazy {
+        retrofit.create(HTMLScraperService::class.java)
+    }
+
+    val asistenciaService: AsistenciaApiService by lazy {
+        retrofit.create(AsistenciaApiService::class.java)
+    }
 }
