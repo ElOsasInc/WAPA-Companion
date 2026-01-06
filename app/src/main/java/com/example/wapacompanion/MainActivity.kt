@@ -4,18 +4,14 @@ package com.example.wapacompanion
 import com.example.wapacompanion.ui.screens.LoginScreen
 import com.example.wapacompanion.ui.screens.InicioScreen
 import com.example.wapacompanion.ui.screens.RegisterScreen
-import com.example.wapacompanion.ui.theme.WAPACompanionTheme
+import com.example.wapacompanion.ui.screens.AgregarClaseScreen
 
 //Librerias
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -45,11 +41,23 @@ class MainActivity : ComponentActivity() {
 
                         composable("inicio") {
                             InicioScreen(
+                                agregarClase = {
+                                    navController.navigate("agregarClase")
+                                },
                                 logoutExitoso = {
                                     navController.navigate("login")
                                 }
                             )
                         }
+
+                        composable("agregarClase") {
+                            AgregarClaseScreen(
+                                claseAgregada = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
 
                         composable("registro") {
                             RegisterScreen(
@@ -59,6 +67,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
                 }
             }
         }
