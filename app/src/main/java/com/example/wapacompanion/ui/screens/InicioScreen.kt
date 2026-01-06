@@ -25,7 +25,7 @@ import androidx.compose.runtime.getValue
 @Composable
 fun InicioScreen(
     agregarClase: () -> Unit,
-    logoutExitoso: () -> Unit
+    logoutExitoso: () -> Unit,
     verDetallesClase: () -> Unit
 ) {
     val profesorViewModel: ProfesorViewModel = viewModel()
