@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("asistencia/{idClase}") { backStackEntry -> // ✅ CAMBIO AQUÍ
+                        composable("asistencia/{idClase}") { backStackEntry ->
                             val idClase = backStackEntry.arguments?.getString("idClase")?.toIntOrNull() ?: 1
                             AsistenciaScreen(idClase = idClase)
                         }
