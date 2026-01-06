@@ -245,7 +245,7 @@ private fun TablaAsistencia(
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.width(50.dp),
+                            modifier = Modifier.width(65.dp),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -313,8 +313,8 @@ private fun FilaAsistencia(
                 it.boleta == alumno.boleta && it.fecha == fecha
             }
 
-            AsistenciaButton(
-                asistencia = asistencia?.asistencia,
+            AsistenciaCell(
+                asistencia = asistencia,
                 onClick = {
                     asistencia?.let { asist ->
                         onAsistenciaClick(alumno.boleta, fecha, asist.asistencia)
@@ -326,48 +326,48 @@ private fun FilaAsistencia(
 }
 
 @Composable
-private fun AsistenciaButton(
-    asistencia: Boolean?,
+private fun AsistenciaCell(
+    asistencia: Asistencia?,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .width(65.dp)
+            .height(40.dp)
             .clickable { onClick() }
-            .background(
-                color = when (asistencia) {
-                    true -> Color(0xFF4CAF50)
-                    false -> Color(0xFFF44336)
-                    null -> Color(0xFFE0E0E0)
-                },
-                shape = RoundedCornerShape(8.dp)
-            )
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(8.dp)
+                1.dp,
+                MaterialTheme.colorScheme.outline,
+                RoundedCornerShape(4.dp)
             ),
         contentAlignment = Alignment.Center
     ) {
-        when (asistencia) {
-            true -> Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Presente",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-            false -> Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Falta",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-            null -> Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Sin registro",
-                tint = Color.Gray,
-                modifier = Modifier.size(16.dp)
-            )
+        when {
+            asistencia?.asistencia == true -> {
+                Text(
+                    text = asistencia.hora ?: "??:??",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
+                )
+            }
+            asistencia?.asistencia == false -> {
+                Text(
+                    text = "",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+            else -> {
+                Text(
+                    text = "-",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

@@ -76,7 +76,7 @@ class AsistenciaViewModel : ViewModel() {
                 }
 
                 if (yaEscaneadaHoy) {
-                    _error.value = "Esta boleta ya fue registrada hoy"
+                    _error.value = "Esta boleta ya fue escaneada"
                     return@launch
                 }
 
@@ -126,14 +126,14 @@ class AsistenciaViewModel : ViewModel() {
                 val url = codigo.trim()
                 val scrapResponse = repository.scrapHTML(url)
                 if (!scrapResponse.isSuccessful) {
-                    _error.value = "Error al leer la página del QR"
+                    _error.value = "Error al leer la página"
                     ultimoCodigo.value = "Error en página"
                     return@launch
                 }
                 val htmlContent = scrapResponse.body()?.html
                 if (htmlContent.isNullOrEmpty()) {
                     _error.value = "Página vacía"
-                    ultimoCodigo.value = "Página sin contenido"
+                    ultimoCodigo.value = "Página inválida"
                     return@launch
                 }
                 val regex = Regex("([0-9]{2}|PE)[0-9]{8}")
@@ -141,7 +141,7 @@ class AsistenciaViewModel : ViewModel() {
 
                 if (match != null) {
                     val boleta = match.value.trim()
-                    ultimoCodigo.value = "Boleta encontrada: $boleta"
+                    ultimoCodigo.value = "Boleta: $boleta"
                     registrarAsistencia(idClase, boleta)
                 } else {
                     _error.value = "No se encontró boleta en la página"
